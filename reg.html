@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration</title>
+    <style>
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+        .success {
+            color: green;
+            font-size: 0.9em;
+        }
+    </style>
+    <script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('passwords');
+            const checkbox = document.getElementById('showPassword');
+            passwordInput.type = checkbox.checked ? 'text' : 'password';
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('names').value;
+            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('passwords').value;
+            const usernameError = document.getElementById('usernameError');
+            const emailError = document.getElementById('emailError');
+            const formMessage = document.getElementById('formMessage');
+
+            usernameError.textContent = "";
+            emailError.textContent = "";
+            formMessage.textContent = "";
+
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                emailError.textContent = "Please enter a valid email address.";
+                return;
+            }
+
+            if (password.length < 8 || password.length > 20) {
+                formMessage.textContent = "Password must be between 8 and 20 characters.";
+                formMessage.className = "error";
+                return;
+            }
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "reg.php", true);
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhr.onload = function() {
+                const response = xhr.responseText;
+                if (response === "exists") {
+                    usernameError.textContent = "Username already exists. Please choose a different one.";
+                } else if (response === "email_exists") {
+                    emailError.textContent = "Email already exists. Please choose a different one.";
+                } else if (response === "success") {
+                    setTimeout(() => {
+                        window.location.href = "log.html";
+                    }, 0);
+                } else {
+                    formMessage.textContent = "Error: " + response;
+                    formMessage.className = "error";
+                }
+            };
+            xhr.send("names=" + encodeURIComponent(name) + "&email=" + encodeURIComponent(email) + 
+                     "&username=" + encodeURIComponent(username) + "&passwords=" + encodeURIComponent(password));
+        }
+    </script>
+</head>
+<body>
+    <form id="registrationForm" onsubmit="submitForm(event);">
+        <label for="names">Name:</label>
+        <input type="text" id="names" name="names" required><br>
+        
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        <div id="emailError" class="error"></div><br>
+        
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <div id="usernameError" class="error"></div><br>
+        
+        <label for="passwords">Password:</label>
+        <input type="password" id="passwords" name="passwords" required minlength="8" maxlength="20"
+               title="Password must be between 8 and 20 characters."><br>
+        
+        <input type="checkbox" id="showPassword" onclick="togglePasswordVisibility()">
+        <label for="showPassword">Show Password</label><br>
+
+        <input type="submit" value="Register">
+        <div id="formMessage"></div>
+    </form>
+</body>
+</html>

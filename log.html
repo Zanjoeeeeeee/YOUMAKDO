@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Login</title>
+    <style>
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+        .success {
+            color: green;
+            font-size: 0.9em;
+        }
+    </style>
+    <script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('passwords');
+            const checkbox = document.getElementById('showPassword');
+            passwordInput.type = checkbox.checked ? 'text' : 'password';
+        }
+
+        function submitLoginForm(event) {
+            event.preventDefault(); 
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('passwords').value;
+            const loginMessage = document.getElementById('loginMessage');
+            const usernameError = document.getElementById('usernameError');
+            const passwordError = document.getElementById('passwordError');
+
+            loginMessage.textContent = "";
+            usernameError.textContent = "";
+            passwordError.textContent = "";
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "log.php", true);
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhr.onload = function() {
+                const response = xhr.responseText.trim();
+                
+                if (response === "success") {
+                    setTimeout(() => {
+                        window.location.href = "order.html"; 
+                    }, 0);
+                } else if (response === "invalid_username") {
+                    usernameError.textContent = "Invalid username.";
+                    loginMessage.className = "error";
+                } else if (response === "invalid_password") {
+                    passwordError.textContent = "Incorrect password.";
+                    loginMessage.className = "error";
+                } else {
+                    loginMessage.textContent = "Error: " + response;
+                    loginMessage.className = "error";
+                }
+            };
+
+            xhr.onerror = function() {
+                loginMessage.textContent = "Request error. Please try again.";
+                loginMessage.className = "error";
+            };
+
+            xhr.send("username=" + encodeURIComponent(username) + "&passwords=" + encodeURIComponent(password));
+        }
+    </script>
+</head>
+<body>
+    <h2>User Login</h2>
+    <form id="loginForm" onsubmit="submitLoginForm(event);">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <div id="usernameError" class="error"></div><br>
+        
+        <label for="passwords">Password:</label>
+        <input type="password" id="passwords" name="passwords" required>
+        <div id="passwordError" class="error"></div><br>
+
+        <input type="checkbox" id="showPassword" onclick="togglePasswordVisibility()">
+        <label for="showPassword">Show Password</label><br>
+
+        <input type="submit" value="Login">
+        <div id="loginMessage"></div>
+    </form>
+    <p>Don't have an account? <a href="reg.html">Register here</a>.</p>
+</body>
+</html>
